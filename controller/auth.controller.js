@@ -17,11 +17,18 @@ let signup = async (req, res, next) => {
     let roles = await Roles.findAll({
       where: { name: { [Sequelize.Op.or]: req.body.roles } },
     });
-    // console.log(roles) // roles is an obj with id and name as key
-    await user.setRoles(roles);
+    // console.log(roles) // roles is an obj with id(we wanted id cuase name is already provided in body)
+    // and name as key
+    await user.setRoles(roles); // setting role with id
     res.status(200).json({
       message: "User registered successfully",
     });
+  }else{
+    // if body doesn't has role then set the role as 'user' by default
+    await user.setRoles([1]) // 1 is the id of user role
+    res.status(200).json({
+      message : "User registared with role as 'user'"
+    })
   }
 };
 
@@ -54,7 +61,7 @@ let signin = async (req, res, next) => {
   });
   let authorities = [];
   let roles = await userName.getRoles();
-//   console.log(roles); // roles is an obj with id and name as key
+//   console.log(roles); // roles is array of objects with id and name as key
   for (let i = 0; i < roles.length; i++) {
     authorities.push("ROLE_" + roles[i].name.toUpperCase());
   }
