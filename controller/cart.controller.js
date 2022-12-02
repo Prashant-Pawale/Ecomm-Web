@@ -1,10 +1,8 @@
 const db = require("./../model/index");
-const Product = db.product;
-const Cart = db.cart;
 
 let createCart = async (req,res,next) => {
     try {
-        await Cart.create({cost: 0});
+        await db.cart.create({ cost: 0 });
         res.status(200).json({
             message : "Cart created"
         });
@@ -17,10 +15,10 @@ let createCart = async (req,res,next) => {
 
 let updateCart = async (req,res,next) => {
     const cartId = req.params.cartId;
-    let cartToUpdate = await Cart.findByPk(cartId);
+    let cartToUpdate = await db.cart.findByPk(cartId);
     if(cartToUpdate){
-        let productsToAdd = await Product.findAll({
-            where : {id : req.body.productIds} // productIds will be an array
+        let productsToAdd = await db.product.findAll({
+          where: { id: req.body.productIds }, // productIds will be an array
         });
 
         if(productsToAdd){
@@ -29,6 +27,7 @@ let updateCart = async (req,res,next) => {
 
             let totalCost = 0;
             let productsSelected = [];
+            // products is an array of object
             let products = await cartToUpdate.getProducts();
             for(let i=0; i<products.length; i++){
                 totalCost += products[i].price;
@@ -48,7 +47,7 @@ let updateCart = async (req,res,next) => {
 };
 
 let getCart = async (req,res,next) => {
-    let cart = await Cart.findByPk(req.body.cartId);
+    let cart = await db.cart.findByPk(req.params.cartId);
     let totalCost = 0;
     let productsSelected = [];
     let products = await cart.getProducts();
@@ -61,7 +60,7 @@ let getCart = async (req,res,next) => {
       });
     }
     res.status(200).json({
-      id: cartToUpdate.id,
+      id: cart.id,
       productsSelected,
       totalCost,
     });

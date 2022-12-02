@@ -1,21 +1,19 @@
 let bcrypt = require("bcryptjs");
 const config = require("./../config/auth.config");
 let jwt = require("jsonwebtoken");
-const { Sequelize } = require("sequelize");
 let db = require("./../model/index");
-let User = db.user; // user model which we imported in index file of model.
-let Roles = db.roles; // roles model
+
 
 let signup = async (req, res, next) => {
-  let user = await User.create({
+  let user = await db.user.create({
     username: req.body.username,
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 8),
   });
   // req.body.roles will be an array like ['admin','user']
   if (req.body.roles) {
-    let roles = await Roles.findAll({
-      where: { name: { [Sequelize.Op.or]: req.body.roles } },
+    let roles = await db.roles.findAll({
+      where: { name: { [db.sequelize.Op.or]: req.body.roles } },
     });
     // console.log(roles) // roles is an obj with id(we wanted id cuase name is already provided in body)
     // and name as key
@@ -33,7 +31,7 @@ let signup = async (req, res, next) => {
 };
 
 let signin = async (req, res, next) => {
-  let userName = await User.findOne({
+  let userName = await db.user.findOne({
     where: { username: req.body.username },
   });
 //   console.log(userName); // it prints an object having username same as provided in req.body

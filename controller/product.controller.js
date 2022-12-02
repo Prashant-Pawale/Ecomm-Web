@@ -1,9 +1,8 @@
-const { Sequelize } = require('sequelize');
-const Product = require("./../model/Product")
+const db = require("./../model/index")
 
 // This is post call for inserting all products
 let insertProducts = async (req, res, next) => {
-    await Product.bulkCreate([
+    await db.product.bulkCreate([
       { name: "Adidas Shoes", categoryId: 1, price: 2000 },
       { name: "Raymond Blazer", categoryId: 1, price: 10000 },
       { name: "Titan Watch", categoryId: 1, price: 3000 },
@@ -27,18 +26,18 @@ let getAllProducts = async (req, res, next) => {
     let maxPrice = req.query.maxPrice;
     let getProducts = [];
     if (Object.keys(req.query).length == 0) {
-        getProducts = await Product.findAll();
+        getProducts = await db.product.findAll();
     } else  if (categoryId && !(minPrice || maxPrice)) {
         getProducts = await filterByCategory(categoryId);
     } else if (!categoryId && minPrice && maxPrice) {
         getProducts = await filterByPriceRange(minPrice, maxPrice);
     } else {
-        getProducts = await Product.findAll({
+        getProducts = await db.product.findAll({
           where: {
             categoryId: categoryId,
             price: {
-              [Sequelize.Op.gte]: minPrice,
-              [Sequelize.Op.lte]: maxPrice,
+              [db.sequelize.Op.gte]: minPrice,
+              [db.sequelize.Op.lte]: maxPrice,
             },
           },
         });
@@ -48,17 +47,17 @@ let getAllProducts = async (req, res, next) => {
     res.end();
 }
 let filterByCategory = async (categoryId) => {
-  let filteredProducts = await Product.findAll({
+  let filteredProducts = await db.product.findAll({
     where: { categoryId: categoryId },
   });
   return filteredProducts;
 };
 let filterByPriceRange = async (minPrice, maxPrice) => {
-    let filteredProductsByPrice = await Product.findAll({
+    let filteredProductsByPrice = await db.product.findAll({
       where: {
         price: {
-          [Sequelize.Op.gte]: minPrice,
-          [Sequelize.Op.lte]: maxPrice,
+          [db.sequelize.Op.gte]: minPrice,
+          [db.sequelize.Op.lte]: maxPrice,
         },
       },
     });
@@ -68,7 +67,7 @@ let filterByPriceRange = async (minPrice, maxPrice) => {
 
 let getProductsById = async (req, res, next) => {
     let id = req.params.productId
-    let productById = await Product.findAll({
+    let productById = await db.product.findAll({
       where: { id : id },
     });
     // res.writeHead(200, { "Content-Type": "application/json" });
@@ -77,31 +76,29 @@ let getProductsById = async (req, res, next) => {
 }
 
 let addNewProduct = async (req, res, next) => {
-    try {
-        let productToAdd = {name : req.body.name,
-                            price : req.body.price,
-                            categoryId : req.body.categoryId
-                            };
-        await Product.create({
-          name: productToAdd.name,
-          price: productToAdd.price,
-          categoryId : productToAdd.categoryId
+    let productToAdd = req.body;
+    try {     
+        await db.product.create(productToAdd);
+        res.status(201).json({
+          message: "New product added",
+          addedProduct: productToAdd,
         });
-        res.status(201).send("New product added");
         res.end();
     } catch(err) {
-        next(err);
+        res.status(500).json({
+          message : "Some internal error occured",
+        })
     }
 }
 
 let deleteProductById = async (req, res, next) => {
     let id = req.params.productId;
-    let product = await Product.findByPk(id);
+    let product = await db.product.findByPk(id);
     try {
         if(!product){
             throw new Error('Product not found');
         }
-        await Product.destroy({
+        await db.product.destroy({
           where: { id: id },
         });
         res.status(200).send('product deleted');
@@ -117,10 +114,10 @@ let updateByProductId = async (req, res, next) => {
                            price : req.body.price,
                            categoryId : req.body.categoryId
     }
-    await Product.update(productToUpdate, {
+    await db.product.update(productToUpdate, {
       where: { id : id },
     });
-    let updatedProduct = await Product.findByPk(id);
+    let updatedProduct = await db.product.findByPk(id);
     res.status(200).send(updatedProduct);
     res.end();
 }

@@ -4,7 +4,10 @@
   "description": "Ecommerse Application",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "migrate" : "npx sequelize-cli db:migrate",
+    "migrate:reset" : "npx sequelize-cli db:migrate:undo:all && npm run migrate",
+    "test": "cross-env NODE_ENV=test jest --testTimeout=10000 --coverage",
+    "pretest": "cross-env Node_ENV=test npm run migrate:reset"
   },
   "author": "Prashant",
   "license": "ISC",
@@ -15,9 +18,12 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.3.3",
-    "sequelize": "^6.25.5"
+    "sequelize": "^6.25.5",
+    "sequelize-cli": "^6.5.2"
   },
   "devDependencies": {
-    "jest": "^29.3.1"
+    "cross-env": "^7.0.3",
+    "jest": "^29.3.1",
+    "supertest": "^6.3.1"
   }
 }

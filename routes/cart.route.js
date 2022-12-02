@@ -1,11 +1,12 @@
 let express = require("express");
 let cartRouter = express.Router();
 let cartController = require("./../controller/cart.controller")
+let authJwt = require("./../middlewares/authJwt");
 
-cartRouter.post("/", cartController.createCart)
+cartRouter.post("/", [authJwt.verifyToken], cartController.createCart)
 
-cartRouter.put("/:cartId", cartController.updateCart);
+cartRouter.put("/:cartId", [authJwt.verifyToken], cartController.updateCart);
 
-cartRouter.get("/:cartId", cartController.getCart);
+cartRouter.get("/:cartId", [authJwt.verifyToken], cartController.getCart);
 
 module.exports = cartRouter;

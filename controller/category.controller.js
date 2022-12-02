@@ -1,28 +1,33 @@
-const { Sequelize } = require("sequelize");
-const Category = require("./../model/Category");
+const db = require("./../model/index")
 
 let getAllCategories = async (req, res, next) => {
-  let getCategories = await Category.findAll();
-  // res.writeHead(200, { "Content-Type": "application/json" });
-  res.send(getCategories);
-  res.end();
+  try{
+    let getCategories = await db.category.findAll();
+    res.status(200).json(getCategories);
+  } catch(err){
+    res.status(400).json({
+      message : "Some internal error occured"
+    })
+  }
 };
 
 let getCategoryById = async (req, res, next) => {
   let id = req.params.categoryId;
-  let dataById = await Category.findAll({
-    where: { id : id },
+  let dataById = await db.category.findOne({
+    where: { id: id },
   });
-  res.send(dataById);
-  res.end();
+  res.status(200).json(dataById);
 };
 
 let addNewCategory = async (req, res, next) => {
   try {
     let categoryToAdd = req.body;
     if (categoryToAdd.name) {
-      await Category.create(categoryToAdd);
-      res.status(201).send("New Category Added");
+      await db.category.create(categoryToAdd);
+      res.status(201).send({
+        message: "New Category Added",
+        addedCategory: categoryToAdd,
+      });
       res.end();
     }
   } catch (err) {
@@ -33,10 +38,16 @@ let addNewCategory = async (req, res, next) => {
 let deleteCategoryById = async (req, res, next) => {
   let id = req.params.categoryId;
   try {
-    await Category.destroy({
-      where: { id : id },
+    await db.category.destroy({
+      where: { id: id },
     });
-    res.status(200).send("category deleted");
+    let deletedCategory = await db.category.findOne({
+      where : {id : id}
+    });
+    res.status(200).send({
+      message: "category deleted",
+      deleted_Category : deletedCategory,
+    });
     res.end();
   } catch (err) {
     next(err);
@@ -47,10 +58,10 @@ let updateCategoryById = async (req, res, next) => {
   try {
     let id = req.params.categoryId;
     let categoryToUpdate = { name: req.body.name };
-    await Category.update(categoryToUpdate, {
-      where: { id : id },
+    await db.category.update(categoryToUpdate, {
+      where: { id: id },
     });
-    let updatedCategory = await Category.findByPk(id);
+    let updatedCategory = await db.category.findByPk(id);
     res.status(200).send(updatedCategory);
     res.end();
   } catch (err) {

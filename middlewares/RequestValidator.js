@@ -1,4 +1,4 @@
-const Categories = require("./../model/Category")
+const db = require("../model");
 
 let validateReqForCategoryName = async (req, res, next) => {
     if(!req.body.name){
@@ -12,7 +12,7 @@ let validateReqForCategoryName = async (req, res, next) => {
 let validateReqForCategoryId = async (req,res,next) => {
     let id = req.params.categoryId;
     if(id) {
-        let category = await Categories.findByPk(id);
+        let category = await db.category.findByPk(id);
         if(!category){
             res.status(400).send({
                 message : "Category doesn't exist"

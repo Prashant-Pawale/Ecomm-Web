@@ -1,9 +1,8 @@
 const db = require("./../model/index");
-const User = db.user;
 const Roles = db.Roles; // this is the array which we've created in index file of model
 
 let checkDuplicateUserName = async (req, res, next) => {
-    let isUserExist = await User.findOne({
+    let isUserExist = await db.user.findOne({
         where : {username : req.body.username}
     });
 
